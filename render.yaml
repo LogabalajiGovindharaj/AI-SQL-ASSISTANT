@@ -1,0 +1,39 @@
+# Render Blueprint (https://render.com/docs/blueprint-spec)
+#
+# NOTE: Render does not offer a managed MySQL database (only Postgres and
+# Redis are first-class managed products). This blueprint deploys the
+# backend and frontend as web services; you must provision MySQL yourself
+# before deploying, either as:
+#   a) a Render private service running the official mysql Docker image
+#      with a persistent disk (see https://render.com/templates/mysql), or
+#   b) an external managed MySQL provider (PlanetScale, TiDB Cloud, etc).
+# Set DB_HOST/DB_USER/DB_PASSWORD below to point at whichever you choose.
+
+services:
+  - type: web
+    name: ai-sql-assistant-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://ai-sql-assistant-frontend.onrender.com
+    healthCheckPath: /health
+
+  - type: web
+    name: ai-sql-assistant-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    dockerBuildArgs:
+      REACT_APP_API_BASE_URL: https://ai-sql-assistant-backend.onrender.com

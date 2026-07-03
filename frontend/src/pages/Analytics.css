@@ -1,0 +1,103 @@
+.analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.analytics-scope {
+  display: flex;
+  gap: 4px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  width: fit-content;
+}
+
+.analytics-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.analytics-stat {
+  flex: 1;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.analytics-stat-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.analytics-stat-value--good {
+  color: var(--accent);
+}
+
+.analytics-stat-value--bad {
+  color: var(--danger);
+}
+
+.analytics-stat-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.analytics-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.analytics-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.analytics-bar-label {
+  width: 90px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.analytics-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--panel-alt);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.analytics-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.analytics-bar-count {
+  width: 24px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.analytics-rejection {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.analytics-rejection:last-child {
+  border-bottom: none;
+}

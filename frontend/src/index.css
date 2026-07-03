@@ -1,0 +1,56 @@
+:root {
+  --bg: #0b1120;
+  --panel: #121a2c;
+  --panel-alt: #0e1526;
+  --border: #212c42;
+  --text: #e7ecf3;
+  --muted: #7c8aa5;
+  --accent: #35d0ba;
+  --accent-soft: rgba(53, 208, 186, 0.14);
+  --accent-dim: #1f4a45;
+  --danger: #f2665b;
+  --danger-soft: rgba(242, 102, 91, 0.12);
+
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-body: "Inter", -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

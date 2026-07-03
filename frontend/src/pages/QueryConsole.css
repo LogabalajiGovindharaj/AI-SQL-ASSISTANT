@@ -1,0 +1,254 @@
+.console {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.console-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.console-brand-mark {
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+
+.console-nav {
+  display: flex;
+  gap: 4px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.console-nav-tab {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12.5px;
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+
+.console-nav-tab--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.console-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.console-role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.console-logout {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.console-logout:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.console-main {
+  flex: 1;
+  max-width: 880px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.console-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.console-prompt {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.console-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+.console-run {
+  background: var(--accent);
+  color: #06231f;
+  border: none;
+  border-radius: 7px;
+  padding: 9px 18px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.console-run:disabled {
+  opacity: 0.5;
+}
+
+.console-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.console-chip {
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+}
+
+.console-chip:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.console-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.console-panel-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.console-sql {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--accent);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.console-explanation {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 10px 0 0;
+}
+
+.console-error {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.console-mic {
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.console-mic--active {
+  color: var(--danger);
+  border-color: var(--danger);
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.console-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.console-panel-row .console-panel-label {
+  margin-bottom: 0;
+}
+
+.console-export-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.console-tips {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.console-tips li {
+  margin: 0;
+}
+
+.console-explanation code {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  background: var(--panel-alt);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.console-insight p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--text);
+}

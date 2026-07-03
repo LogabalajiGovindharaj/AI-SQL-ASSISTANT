@@ -1,0 +1,40 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'USER'
+);
+
+CREATE TABLE IF NOT EXISTS query_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255) NOT NULL,
+    question VARCHAR(2000) NOT NULL,
+    `sql` VARCHAR(2000),
+    valid BOOLEAN NOT NULL,
+    rejection_reason VARCHAR(1000),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS students (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    department VARCHAR(50) NOT NULL,
+    cgpa DECIMAL(3,2) NOT NULL,
+    marks INT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    department VARCHAR(50) NOT NULL,
+    salary INT NOT NULL,
+    experience INT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+    id INT PRIMARY KEY,
+    product VARCHAR(100) NOT NULL,
+    amount INT NOT NULL,
+    region VARCHAR(50) NOT NULL
+);
