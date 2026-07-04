@@ -39,5 +39,3 @@ services:
     runtime: docker
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
-    dockerBuildArgs:
-      REACT_APP_API_BASE_URL: https://ai-sql-assistant-backend.onrender.com

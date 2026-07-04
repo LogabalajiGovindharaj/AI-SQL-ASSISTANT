@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install
 COPY . .
-ARG REACT_APP_API_BASE_URL=http://localhost:8080
+ARG REACT_APP_API_BASE_URL=https://ai-sql-assistant-backend.onrender.com
 ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
 RUN npm run build
 
