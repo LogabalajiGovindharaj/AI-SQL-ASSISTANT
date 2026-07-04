@@ -23,7 +23,10 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, String>> handleServerError(IllegalStateException e) {
-        log.warn("Upstream/query failure: {}", e.getMessage());
+        // Log the FULL stack trace (including the root cause) so real errors
+        // like Gemini API failures are actually debuggable, not just a
+        // one-line "null" message.
+        log.warn("Upstream/query failure: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("error", e.getMessage()));
     }
 
