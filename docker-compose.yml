@@ -1,48 +1,15 @@
-services:
-  mysql:
-    image: mysql:8.0
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ai_sql_assistant
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+# Build stage: uses an image with Maven preinstalled (no wrapper needed)
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+# Cache dependencies in their own layer before copying source
+RUN mvn -q -B dependency:go-offline || true
+COPY src ./src
+RUN mvn -q -B -Dmaven.test.skip=true package
 
-  backend:
-    build: ./backend
-    restart: unless-stopped
-    depends_on:
-      mysql:
-        condition: service_healthy
-    environment:
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: root
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      GEMINI_MODEL: gemini-2.5-flash
-      JWT_SECRET: ${JWT_SECRET}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
-    ports:
-      - "8080:8080"
-
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        REACT_APP_API_BASE_URL: http://localhost:8080
-    restart: unless-stopped
-    depends_on:
-      - backend
-    ports:
-      - "3000:80"
-
-volumes:
-  mysql-data:
+# Runtime stage: slim JRE only, no build tooling
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
+COPY --from=build /app/target/assistant-*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
