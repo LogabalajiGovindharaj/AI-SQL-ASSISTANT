@@ -107,7 +107,7 @@ Full installation, testing, and deployment instructions: see [`SETUP.md`](./SETU
 ## 🧩 Tech Stack
 
 **Backend:** Java 17 · Spring Boot · Spring Security · JWT · JPA/JDBC · MySQL
-**AI Layer:** Claude API (Anthropic) · tool-use structured output
+**AI Layer:** Google gemini Api · tool-use structured output
 **Frontend:** React · Web Speech API
 **DevOps:** Docker · Docker Compose · Render
 
