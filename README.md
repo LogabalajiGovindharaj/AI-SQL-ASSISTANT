@@ -1,164 +1,70 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-# AI SQL Query & Database Assistant Agent
+# AI SQL Assistant — Backend (Phase 4)
 
-Turn plain-English questions into validated, executed SQL with an explanation,
-follow-up suggestions, and query-cost feedback — built as a 5-agent pipeline
-(Intent+SQL Generation → Validation → Execution → Insight, plus a deterministic
-Optimization Agent) on Spring Boot, backed by Claude, with a React console on top.
+## What's new in Phase 4
+- Spring Security + JWT auth
+- `POST /signup` and `POST /login` (public)
+- `/generate-query` and `/execute-query` now require a valid `Authorization: Bearer <token>` header
+- Passwords are BCrypt-hashed, never stored or returned in plaintext
+- New signups are always role `USER`; `ADMIN` is granted manually (never self-assigned via signup)
 
-See [`architecture.md`](./architecture.md) for the full system design and
-architecture diagram (ASCII pipeline diagram + component breakdown, folder
-structure, and API contract).
-
-## Repo layout
-
-```
-.
-├── backend/          Spring Boot API + agent pipeline (see backend/README.md)
-│   ├── src/main/      application code
-│   ├── src/test/      unit + integration test suite
-│   ├── load-tests/    k6 load test
-│   └── Dockerfile
-├── frontend/          React console (see frontend/README.md)
-│   └── Dockerfile
-├── docker-compose.yml runs mysql + backend + frontend together
-├── render.yaml         Render deployment blueprint
-└── architecture.md    Phase 1 architecture + diagram reference
-```
-
-## 1. Installation (local, without Docker)
-
-**Requirements:** JDK 17+, Maven 3.9+, Node.js 18+, a running MySQL 8 instance.
-
-```bash
-# 1. Create the database (schema.sql/data.sql seed it automatically on boot)
-mysql -u root -p -e "CREATE DATABASE ai_sql_assistant"
-
-# 2. Backend
-cd backend
-export ANTHROPIC_API_KEY=sk-ant-...
-export JWT_SECRET=$(openssl rand -hex 32)
-export DB_HOST=localhost DB_USER=root DB_PASSWORD=yourpassword
-./mvnw spring-boot:run    # or: mvn spring-boot:run
-# backend now on http://localhost:8080
-
-# 3. Frontend (separate terminal)
-cd frontend
-npm install
-npm start
-# frontend now on http://localhost:3000
-```
-
-> This repo does not include a checked-in Maven wrapper (`mvnw`). If you
-> don't have Maven installed locally, generate one with `mvn -N
-> wrapper:wrapper` inside `backend/`, or just use your own `mvn` (both
-> commands above have an `mvn` fallback shown).
-
-## 2. Docker setup (recommended)
+## Run it
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-export JWT_SECRET=$(openssl rand -hex 32)
+export JWT_SECRET=$(openssl rand -hex 32)   # or any string >= 32 chars
 docker compose up --build
 ```
+(Remember to pass `JWT_SECRET` through in `docker-compose.yml`'s backend environment
+block if you keep it — it's currently defaulted for local dev only.)
 
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8080
-- MySQL: localhost:3306 (root/root, database `ai_sql_assistant`)
-
-Sign up on the frontend, then ask things like "Show students with CGPA above
-8" or "Show total sales region wise." The pipeline status (Understand →
-Validate → Execute → Insight) updates live as each agent runs.
-
-To promote a user to `ADMIN` (unlocks the Admin page and `/admin/*`
-endpoints):
-```sql
-UPDATE users SET role = 'ADMIN' WHERE email = 'you@example.com';
-```
-Log in again afterwards so a fresh JWT (carrying the new role) is issued.
-
-## 3. Testing instructions
+## Try it end-to-end
 
 ```bash
-cd backend
-./mvnw test    # or: mvn test
+# 1. Sign up
+curl -s -X POST http://localhost:8080/signup \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Balaji","email":"balaji@example.com","password":"password123"}' | tee /tmp/auth.json
+
+TOKEN=$(python3 -c "import json;print(json.load(open('/tmp/auth.json'))['token'])")
+
+# 2. Generate SQL (now requires the token)
+curl -s -X POST http://localhost:8080/generate-query \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"question": "Show students with CGPA above 8"}' | tee /tmp/gen.json
+
+# 3. Execute it
+SQL=$(python3 -c "import json;print(json.load(open('/tmp/gen.json'))['sql'])")
+curl -s -X POST http://localhost:8080/execute-query \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{\"sql\": \"$SQL\", \"question\": \"Show students with CGPA above 8\"}"
 ```
 
-Tests run against an in-memory H2 database (MySQL-compatible mode) — no live
-MySQL instance or Claude API key needed. Coverage includes:
-- `ValidationAgentTest` — the deterministic SQL safety gate (blocklists, stacked statements, unknown tables)
-- `AnalyticsServiceTest` — usage-stat aggregation logic
-- `ClaudeApiServiceTest` — real HTTP-level contract tests against a local stub server standing in for `api.anthropic.com` (success, HTTP error, malformed JSON, missing tool_use block, connection failure)
-- `SqlGenerationAgentTest`, `InsightAgentTest` — agent behavior with a mocked Claude client (success, missing fields, exception propagation)
-- `QueryOrchestratorServiceTest` — full pipeline wiring (accept/reject paths, defense-in-depth re-validation on `/execute-query`, execution-failure propagation)
-- `SecurityIntegrationTest` — runs the real Spring Security filter chain: 401 unauthenticated, 403 for USER on `/admin/**`, 200 for ADMIN, public routes reachable
+Calling `/generate-query` or `/execute-query` without a token now returns `401 Unauthorized`.
 
-Load test (optional, requires [k6](https://k6.io) and a running backend):
+## What's new in Phase 8
+- `GET /analytics` — any authenticated user gets their own usage stats (total/valid/rejected query counts, most-queried tables, recent rejections)
+- `GET /admin/analytics` — same stats across **all** users, restricted to `ADMIN` role at the Spring Security filter-chain level (not just hidden in the UI — a non-admin token gets a real `403`)
+- All signups default to role `USER`. To promote someone to `ADMIN` for local testing:
+  ```sql
+  UPDATE users SET role = 'ADMIN' WHERE email = 'you@example.com';
+  ```
+  They'll need to log in again afterwards so their JWT is reissued with the new role.
+
+## What's new in Phase 9
+- `OptimizationAgent`: `/execute-query` now also returns `estimatedRowsScanned` and `accessType` (from MySQL's own `EXPLAIN`) plus deterministic optimization tips (missing WHERE/LIMIT, `SELECT *`, full table scans)
+- `GET /admin/users` — ADMIN-only user list
+- Real test coverage: `ValidationAgentTest` (12 cases), `AnalyticsServiceTest`, and `SecurityIntegrationTest` (runs the actual Spring Security filter chain against an in-memory H2 DB — verifies 401 for unauthenticated calls, 403 for USER hitting `/admin/**`, 200 for ADMIN)
+- `load-tests/query-pipeline.js` — a k6 load test for the generate→execute flow
+
+Run the test suite with:
 ```bash
-TOKEN=<jwt from /login> k6 run backend/load-tests/query-pipeline.js
+./mvnw test
 ```
+(Tests use H2 in-memory, not your MySQL instance — no live DB needed to run them.)
 
-> **Environment note:** this project was developed in a sandboxed environment
-> without access to Maven Central or the npm registry, so `mvn test` and `npm
-> install` could not be executed here to produce a literal pass/fail log.
-> Every file was reviewed manually and cross-checked for structural
-> correctness, and the JS/JSX was checked for syntax validity, but you should
-> run the commands above yourself before treating the build as verified.
-
-## 4. Deployment guide
-
-**GitHub:** this repo is ready to push as-is — see the "Prepare for GitHub"
-checklist in the next section.
-
-**Render:** a `render.yaml` blueprint is included at the repo root, defining
-the backend and frontend as Docker web services. Render has no managed MySQL
-product (only Postgres/Redis), so provision MySQL separately first:
-1. A Render **private service** running the official `mysql` Docker image
-   with a persistent disk ([reference template](https://render.com/templates/mysql)), or
-2. An external managed MySQL provider (PlanetScale, TiDB Cloud, etc).
-
-Then, from the Render dashboard: New → Blueprint → point at this repo. Fill
-in the `sync: false` env vars (`DB_HOST`, `DB_USER`, `DB_PASSWORD`,
-`ANTHROPIC_API_KEY`) when prompted; `JWT_SECRET` is auto-generated by the
-blueprint. Update `CORS_ALLOWED_ORIGINS` and the frontend's
-`REACT_APP_API_BASE_URL` build arg in `render.yaml` to match your actual
-Render-assigned service URLs before deploying (the placeholders use the
-default `onrender.com` naming pattern, which only matches if your service
-names are unchanged).
-
-## 5. Prepare for GitHub checklist
-
-- [x] `.gitignore` present at root, `backend/`, and `frontend/` (build
-      artifacts, `node_modules`, `target/`, `.env`, IDE files)
-- [x] No secrets committed — `ANTHROPIC_API_KEY`, `JWT_SECRET`, and DB
-      credentials are all read from environment variables; `application.yml`
-      only contains local-dev-only placeholder defaults, never real keys
-- [x] Clean folder structure — no stray/duplicate files
-- [x] `README.md` (this file) + per-module READMEs in `backend/` and `frontend/`
-
-## What's built
-
-Every phase of the original spec is implemented: architecture doc, all 5
-agents (+ a deterministic Optimization/Cost Agent), the full REST API
-(`/generate-query`, `/execute-query`, `/history`, `/analytics`,
-`/admin/analytics`, `/admin/users`, `/login`, `/signup`, `/health`), JWT auth
-with enforced roles, all demo tables + query history, and a React frontend
-(Landing, Login/Signup, Dashboard, Console, History, Analytics, Admin) with
-CSV export, downloadable reports, and voice input.
-
-**Known limitations:**
-- Build/test commands could not be literally executed in the environment
-  this was built in (no Maven Central / npm registry access) — verify
-  locally with the commands in section 3 before treating this as CI-passing.
-- No GitHub repo or live Render deployment exists yet — this repo is
-  deployment-ready, but pushing to GitHub and clicking through Render setup
-  are manual steps only you can do.
-- Voice input requires a Chromium-based browser (Web Speech API is not
-  supported in Firefox).
-=======
-# AI-SQL-ASSISTANT
-AI-powered SQL Query &amp; Database Assistant that converts natural language into optimized SQL, executes queries securely, validates results, and provides intelligent database insights through a modern full-stack interface.
->>>>>>> c9cc852df467a0242bb8dc4fef7a3275270a8198
->>>>>>> 0b7090a89db9e444d69d342d43dbd8a7dea115f7
+## What's deliberately NOT here yet
+- `/history`, `/analytics`
+- React frontend (Phase 5, next)
+- Query cost analysis, CSV export, fine-grained role permissions, voice input
