@@ -1,6 +1,4 @@
-target/
-node_modules/
-build/
+node_modules
+build
 .env
-*.log
 .DS_Store
